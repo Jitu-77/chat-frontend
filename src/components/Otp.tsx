@@ -1,6 +1,6 @@
 import { useState } from "react";
 import AuthLayout from "../components/AuthLayout";
-
+import { useNavigate } from "react-router-dom";
 const Otp = () => {
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
 
@@ -9,7 +9,7 @@ const Otp = () => {
     newOtp[index] = value;
     setOtp(newOtp);
   };
-
+  const navigate = useNavigate();
   return (
     <AuthLayout>
       <h2 className="text-2xl font-bold mb-4 text-center">Verify OTP</h2>
@@ -32,7 +32,7 @@ const Otp = () => {
 
       <button
         className="w-full bg-primary text-white py-2 rounded-xl"
-        onClick={() => {}}
+        onClick={() => {navigate("/dashboard");}}
       >
         Verify
       </button>

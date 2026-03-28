@@ -8,7 +8,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const handleLogin = async () => {
-    // navigate("/dashboard");
+    navigate("/dashboard");
     // try {
     //   const res = await api.post("/auth/login", {
     //     email,
