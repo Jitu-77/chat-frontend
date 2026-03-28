@@ -1,14 +1,17 @@
-
-import './App.css'
+import { Routes, Route, Navigate } from "react-router-dom";
+import Login from "./components/Login";
+import Signup from "./components/Signup";
+import Otp from "./components/Otp";
 
 function App() {
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-900">
-      <h1 className="text-3xl font-bold text-white">
-        Tailwind Working ✅
-      </h1>
-    </div>
+    <Routes>
+      <Route path="/" element={<Navigate to="/login" />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/otp" element={<Otp />} />
+    </Routes>
   );
 }
 
-export default App
+export default App;
