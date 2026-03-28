@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState ,useEffect} from "react";
 import AuthLayout from "../components/AuthLayout";
 import { useNavigate } from "react-router-dom";
 const Otp = () => {
@@ -9,6 +9,9 @@ const Otp = () => {
     newOtp[index] = value;
     setOtp(newOtp);
   };
+    useEffect(() => {
+    console.log(otp);
+  }, [otp]);
   const navigate = useNavigate();
   return (
     <AuthLayout>
@@ -24,7 +27,9 @@ const Otp = () => {
             key={index}
             maxLength={1}
             value={digit}
-            onChange={(e) => handleChange(e.target.value, index)}
+            onChange={(e) => {
+              handleChange(e.target.value, index)
+            }}
             className="w-12 h-12 text-center border rounded-xl focus:outline-primary"
           />
         ))}
@@ -38,6 +43,7 @@ const Otp = () => {
       </button>
     </AuthLayout>
   );
+
 };
 
 export default Otp;
