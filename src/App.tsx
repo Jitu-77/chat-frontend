@@ -4,6 +4,7 @@ import Signup from "./components/Signup";
 import Otp from "./components/Otp";
 import Dashboard from "./components/Dashboard";
 import Chat from "./components/Chat";
+import ProtectedRoute from "./context/ProtectedRoute";
 
 function App() {
   return (
@@ -12,8 +13,8 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/otp" element={<Otp />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/chat/:id" element={<Chat />} />
+      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/chat/:id" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
     </Routes>
   );
 }
