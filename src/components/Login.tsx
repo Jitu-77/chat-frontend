@@ -3,31 +3,41 @@ import AuthLayout from "../components/AuthLayout";
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-
-// import api from "../api/axios";
+import { apiService } from "../api/apiService";
+import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
+  const { login } = useAuth();
   // const [email, setEmail] = useState("");
   // const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const formik = useFormik({
     initialValues: {
-      email: "",
+      firstName: "",
       password: "",
     },
 
     validationSchema: Yup.object({
-      email: Yup.string().email("Invalid email").required("Email is required"),
+      firstName: Yup.string().required("FirstName is required"),
 
       password: Yup.string()
         .min(6, "Minimum 6 characters")
         .required("Password is required"),
     }),
 
-    onSubmit: (values) => {
-      console.log("LOGIN FORM",values);
-      // 🔥 later we will call API here
-      navigate("/dashboard");
+    onSubmit: async(values) => {
+      try {
+        console.log("LOGIN FORM",values);
+        const res :any = await apiService.post("/auth/login", values);
+        console.log(res);
+        login({
+           user: res.user,
+           token: res.accessToken,
+        });
+        navigate("/dashboard");
+      } catch (error) {
+        console.error(error);
+      }
     },
   });
   // const handleLogin = async () => {
@@ -52,16 +62,16 @@ const Login = () => {
       <form className="flex flex-col gap-4" onSubmit={formik.handleSubmit}>
         <>
           <input
-            type="email"
-            name="email"
-            placeholder="Email"
+            type="firstName"
+            name="firstName"
+            placeholder="First Name"
             className="border rounded-xl px-4 py-2 focus:outline-primary"
-            value={formik.values.email}
+            value={formik.values.firstName}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
           />
-          {formik.touched.email && formik.errors.email && (
-            <p className="text-red-500 text-sm mt-1">{formik.errors.email}</p>
+          {formik.touched.firstName && formik.errors.firstName && (
+            <p className="text-red-500 text-sm mt-1">{formik.errors.firstName}</p>
           )}
         </>
 

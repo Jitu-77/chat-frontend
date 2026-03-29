@@ -3,6 +3,7 @@ import AuthLayout from "../components/AuthLayout";
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { apiService } from "../api/apiService";
 const Signup = () => {
   // const [name, setName] = useState("");
   // const [email, setEmail] = useState("");
@@ -15,27 +16,33 @@ const Signup = () => {
       firstName: "",
       lastName: "",
       nickName: "",
-      profilePic: "",
+      // profilePic: "",
       password: "",
     },
     validationSchema: Yup.object({
       firstName: Yup.string().required("First Name is required"),
       lastName: Yup.string().required("Last Name is required"),
       nickName: Yup.string().required("Nick Name is required"),
-      profilePic: Yup.string().required("Profile Picture is required"),
+      // profilePic: Yup.string().required("Profile Picture is required"),
       password: Yup.string().required("Password is required"),
     }),
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
+      try {
       console.log("SIGNUP FORM", values);
-      // 🔥 later we will call API here
-      navigate("/otp");
+      const response :any = await apiService.post("/auth/signup", values);
+      console.log(response);
+      navigate("/login");     
+      } catch (error) {
+        console.error(error);
+      }
+
     },
   });
   return (
     <AuthLayout>
       <h2 className="text-2xl font-bold mb-6 text-center">Create an account</h2>
 
-      <form className="flex flex-col gap-4">
+      <form className="flex flex-col gap-4" onSubmit={formik.handleSubmit}>
         <>
           <input
             type="text"
@@ -104,11 +111,9 @@ const Signup = () => {
 
         <button
           className="bg-primary text-white py-2 rounded-xl hover:bg-primaryDark"
-          onClick={() => {
-            navigate("/otp");
-          }}
+          type="submit"
         >
-          Send OTP
+          Sign Up
         </button>
 
         <p className="text-center text-sm">
