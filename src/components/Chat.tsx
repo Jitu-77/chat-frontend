@@ -1,24 +1,72 @@
-import { useParams } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getSocket } from "../socket/socket";
 
-const dummyMessages = [
-  { id: 1, text: "Hello 👋", sender: "other" },
-  { id: 2, text: "Hi!", sender: "me" },
-  { id: 3, text: "How are you?", sender: "other" },
-  { id: 4, text: "I'm good 😄", sender: "me" },
-];
+interface Message {
+  id: number;
+  text: string;
+  sender: "me" | "other";
+}
 
 const Chat = () => {
-  const { id } = useParams();
-  const [messages, setMessages] = useState(dummyMessages);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
 
-  const sendMessage = () => {
-    if (!input) return;
+  // =========================
+  // 🔥 JOIN TEST ROOM
+  // =========================
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
 
-    setMessages([
-      ...messages,
-      { id: Date.now(), text: input, sender: "me" },
+    socket.emit("join_conversation");
+
+    console.log("✅ Joined test_room");
+
+  }, []);
+
+  // =========================
+  // 🔥 RECEIVE MESSAGE
+  // =========================
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    socket.on("receive_message", (msg: any) => {
+      console.log("📩 Received:", msg);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          text: msg.content,
+          sender: "other",
+        },
+      ]);
+    });
+
+    return () => {
+      socket.off("receive_message");
+    };
+  }, []);
+
+  // =========================
+  // 🔥 SEND MESSAGE
+  // =========================
+  const sendMessage = () => {
+    const socket = getSocket();
+    if (!socket || !input.trim()) return;
+
+    socket.emit("send_message", {
+      content: input,
+    });
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        text: input,
+        sender: "me",
+      },
     ]);
 
     setInput("");
@@ -29,7 +77,7 @@ const Chat = () => {
 
       {/* Header */}
       <div className="bg-primary text-white p-4">
-        <h2 className="font-semibold">Chat ID: {id}</h2>
+        <h2 className="font-semibold">Test Chat Room</h2>
       </div>
 
       {/* Messages */}

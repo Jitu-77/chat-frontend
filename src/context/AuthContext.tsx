@@ -1,6 +1,6 @@
 import { createContext, useContext, useState,  useEffect } from "react";
 import type {ReactNode } from "react";
-// import { connectSocket, disconnectSocket } from "../socket/socket";
+import { connectSocket, disconnectSocket } from "../socket/socket";
 
 interface User {
   id: number;
@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }: Props) => {
       setUser(JSON.parse(storedUser));
 
       // reconnect socket
-    //   connectSocket(storedToken);
+      connectSocket(storedToken);
     }
   }, []);
 
@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }: Props) => {
     localStorage.setItem("user", JSON.stringify(data.user));
 
     // 🔥 connect socket
-    // connectSocket(data.token);
+    connectSocket(data.token);
   };
 
   // 🚪 Logout
@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }: Props) => {
     localStorage.removeItem("user");
 
     // 🔥 disconnect socket
-    // disconnectSocket();
+    disconnectSocket();
   };
 
   return (
