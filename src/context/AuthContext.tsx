@@ -36,8 +36,8 @@ export const AuthProvider = ({ children }: Props) => {
 
   // 🔥 Load from localStorage on refresh
   useEffect(() => {
-    const storedToken = localStorage.getItem("accessToken");
-    const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("accessToken")|| false;
+    const storedUser = localStorage.getItem("user")|| false;
 
     if (storedToken && storedUser) {
       setToken(storedToken);
@@ -52,10 +52,12 @@ export const AuthProvider = ({ children }: Props) => {
   const login = (data: { user: User; token: string }) => {
     setUser(data.user);
     setToken(data.token);
-
-    localStorage.setItem("accessToken", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-
+    if(data?.token){
+      localStorage.setItem("accessToken", data.token);
+    }
+    if(data?.user){
+      localStorage.setItem("user", JSON.stringify(data.user));
+    }
     // 🔥 connect socket
     connectSocket(data.token);
   };

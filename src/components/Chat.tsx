@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getSocket } from "../socket/socket";
-
+import { apiService } from "../api/apiService";
+import { useAuth } from "../context/AuthContext";
 interface Message {
   id: number;
   text: string;
@@ -8,6 +9,7 @@ interface Message {
 }
 
 const Chat = () => {
+  const { login } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
 
@@ -71,6 +73,8 @@ const Chat = () => {
 
     setInput("");
   };
+
+  
 
   return (
     <div className="h-screen flex flex-col bg-gray-100">
