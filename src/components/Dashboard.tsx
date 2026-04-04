@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { apiService } from "../api/apiService";
 import defaultUser from "../assets/user.png";
+import Chat from "./Chat";
 interface Chat {
   conversationId: number;
   name: string;
@@ -17,14 +18,17 @@ interface ChatListResponse {
 const Dashboard = () => {
   const navigate = useNavigate();
   const [chatList, setChatList] = useState([]);
+  const [selectedUser, setSelectedUser] = useState<Chat | null>(null);
   const getList = async () => {
     try {
       const res: any =
         await apiService.get<ChatListResponse>("/conversation/home");
       console.log(res);
       setChatList(res.data);
+      // setSelectedUser(res.data[0]);
       setTimeout(() => {
         console.log("CHAT DATA", chatList);
+        console.log("selectedUser", selectedUser);
       }, 100);
     } catch (error) {
       console.error(error);
@@ -33,6 +37,11 @@ const Dashboard = () => {
   useEffect(() => {
     getList();
   }, []);
+  useEffect(() => {
+    if (window.innerWidth >= 768 && chatList.length > 0) {
+      setSelectedUser(chatList[0]);
+    }
+  }, [chatList]);
   return (
     <div className="h-screen grid grid-cols-12 bg-gray-100">
       {/* Sidebar */}
@@ -69,7 +78,13 @@ const Dashboard = () => {
             // </div>
             <div
               key={chat.conversationId}
-              onClick={() => navigate(`/chat/${chat.conversationId}`)}
+              onClick={() => {
+                if (window.innerWidth < 768) {
+                  navigate(`/chat/${chat.conversationId}`);
+                } else {
+                  setSelectedUser(chat);
+                }
+              }}
               className="p-3 rounded-sm cursor-pointer hover:bg-gray-100 flex items-center justify-between"
             >
               {/* LEFT SECTION */}
@@ -106,8 +121,9 @@ const Dashboard = () => {
       </div>
 
       {/* Empty state (desktop) */}
-      <div className="hidden md:flex col-span-8 lg:col-span-9 items-center justify-center">
-        <p className="text-gray-400">Select a chat to start messaging</p>
+      <div className="hidden md:flex col-span-8 lg:col-span-9 h-screen">
+        {/* <p className="text-gray-400">Select a chat to start messaging</p> */}
+        <Chat selectedUser={selectedUser} />
       </div>
     </div>
   );

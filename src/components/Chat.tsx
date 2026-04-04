@@ -2,16 +2,29 @@ import { useEffect, useState } from "react";
 import { getSocket } from "../socket/socket";
 import { apiService } from "../api/apiService";
 import { useAuth } from "../context/AuthContext";
+import { useParams } from "react-router-dom";
 interface Message {
   id: number;
   text: string;
   sender: "me" | "other";
 }
-
-const Chat = () => {
+interface ChatProps {
+  selectedUser: {
+    conversationId: number;
+    name: string;
+    profilePic: string;
+  } | null;
+}
+const Chat = ({ selectedUser }: any) => {
+  const { id } = useParams();
   const { login } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+
+  console.log("selectedUser in chat", selectedUser);
+  console.log("id in chat", id);
+
+
 
   // =========================
   // 🔥 JOIN TEST ROOM
@@ -77,7 +90,7 @@ const Chat = () => {
   
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100">
+    <div className="h-screen w-screen flex flex-col md:h-full md:w-full">
 
       {/* Header */}
       <div className="bg-primary text-white p-4">
@@ -85,7 +98,7 @@ const Chat = () => {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+      <div className="flex-1 overflow-y-auto p-4 pb-24 flex flex-col gap-2">
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -101,7 +114,7 @@ const Chat = () => {
       </div>
 
       {/* Input */}
-      <div className="p-4 bg-white flex gap-2">
+      <div className="p-4 bg-white flex gap-2 w-full border-t fixed bottom-0 left-0 md:static">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
