@@ -1,6 +1,7 @@
 import { createContext, useContext, useState,  useEffect } from "react";
 import type {ReactNode } from "react";
 import { connectSocket, disconnectSocket } from "../socket/socket";
+import { refreshAccessToken } from "../utility/refreshToken";
 
 interface User {
   id: number;
@@ -73,7 +74,22 @@ export const AuthProvider = ({ children }: Props) => {
     // 🔥 disconnect socket
     disconnectSocket();
   };
+  // 🔥 AUTO REFRESH TOKEN
+  useEffect(() => {
+    console.log("In token");
+    if (!token) return;
 
+    const interval = setInterval(async () => {
+      const newToken = await refreshAccessToken();
+
+      if (newToken) {
+        setToken(newToken);
+        connectSocket(newToken);
+      }
+    }, 1 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [token]);
   return (
     <AuthContext.Provider value={{ user, token, login, logout }}>
       {children}

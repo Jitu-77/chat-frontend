@@ -1,54 +1,44 @@
 import { useEffect, useState } from "react";
 import { getSocket } from "../socket/socket";
-import { apiService } from "../api/apiService";
-import { useAuth } from "../context/AuthContext";
 import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import back from "../assets/left-arrow.png";
+import logOut from "../assets/logOut.png";
+import { useAuth } from "../context/AuthContext";
 interface Message {
   id: number;
   text: string;
   sender: "me" | "other";
 }
+
 interface ChatProps {
-  selectedUser: {
+  selectedUser?: {
     conversationId: number;
     name: string;
     profilePic: string;
-  } | null;
+  };
 }
-const Chat = ({ selectedUser }: any) => {
+
+const Chat = ({ selectedUser }: ChatProps) => {
+  const {logout} = useAuth();
   const { id } = useParams();
-  const { login } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-
-  console.log("selectedUser in chat", selectedUser);
-  console.log("id in chat", id);
-
-
-
-  // =========================
-  // 🔥 JOIN TEST ROOM
-  // =========================
+  const navigate = useNavigate();
+  // JOIN ROOM
   useEffect(() => {
     const socket = getSocket();
     if (!socket) return;
 
     socket.emit("join_conversation");
-
-    console.log("✅ Joined test_room");
-
   }, []);
 
-  // =========================
-  // 🔥 RECEIVE MESSAGE
-  // =========================
+  // RECEIVE MESSAGE
   useEffect(() => {
     const socket = getSocket();
     if (!socket) return;
 
     socket.on("receive_message", (msg: any) => {
-      console.log("📩 Received:", msg);
-
       setMessages((prev) => [
         ...prev,
         {
@@ -64,9 +54,7 @@ const Chat = ({ selectedUser }: any) => {
     };
   }, []);
 
-  // =========================
-  // 🔥 SEND MESSAGE
-  // =========================
+  // SEND MESSAGE
   const sendMessage = () => {
     const socket = getSocket();
     if (!socket || !input.trim()) return;
@@ -87,18 +75,36 @@ const Chat = ({ selectedUser }: any) => {
     setInput("");
   };
 
-  
-
   return (
-    <div className="h-screen w-screen flex flex-col md:h-full md:w-full">
-
+    <div className="flex flex-col h-full w-full bg-gray-50">
       {/* Header */}
-      <div className="bg-primary text-white p-4">
-        <h2 className="font-semibold">Test Chat Room</h2>
+      <div className="bg-primary text-white p-4 flex items-center justify-between">
+        <h2 className="font-semibold">{selectedUser?.name || "Chat"}</h2>
+        <div className="md:hidden px-3 py-1 rounded-lg">
+          <img
+            className="w-12 h-12 rounded-full flex-shrink-0"
+            src={back}
+            alt="back"
+            onClick={() => navigate(-1)}
+          />
+        </div>
+        <div className="hidden md:flex px-3 py-1 rounded-lg">
+          <img
+            className="w-12 h-12 rounded-full flex-shrink-0"
+            src={logOut}
+            alt="logOut"
+            onClick={() => {
+              navigate("/");
+              localStorage.clear();
+              sessionStorage.clear();
+              logout();
+            }}
+          />
+        </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 pb-24 flex flex-col gap-2">
+      <div className="flex-1 overflow-y-auto p-4 pb-24 md:pb-4 flex flex-col gap-2">
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -114,7 +120,10 @@ const Chat = ({ selectedUser }: any) => {
       </div>
 
       {/* Input */}
-      <div className="p-4 bg-white flex gap-2 w-full border-t fixed bottom-0 left-0 md:static">
+      <div
+        className="p-4 bg-white flex gap-2 border-t fixed bottom-0 left-0 w-full 
+                md:static md:w-auto md:flex-shrink-0"
+      >
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -129,7 +138,6 @@ const Chat = ({ selectedUser }: any) => {
           Send
         </button>
       </div>
-
     </div>
   );
 };

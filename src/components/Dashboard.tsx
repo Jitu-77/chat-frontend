@@ -3,79 +3,130 @@ import { useEffect, useState } from "react";
 import { apiService } from "../api/apiService";
 import defaultUser from "../assets/user.png";
 import Chat from "./Chat";
-interface Chat {
+import logOut from "../assets/logOut.png";
+import { useAuth } from "../context/AuthContext";
+interface ChatType {
   conversationId: number;
   name: string;
   profilePic: string;
   lastMessage: string;
   lastMessageTime: string | null;
 }
+
 interface ChatListResponse {
   success: boolean;
-  data: Chat[];
+  data: ChatType[];
 }
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [chatList, setChatList] = useState([]);
-  const [selectedUser, setSelectedUser] = useState<Chat | null>(null);
+  const {logout} = useAuth();
+  const [chatList, setChatList] = useState<ChatType[]>([]);
+  const [selectedUser, setSelectedUser] = useState<ChatType | null>(null);
+
   const getList = async () => {
     try {
       const res: any =
         await apiService.get<ChatListResponse>("/conversation/home");
-      console.log(res);
-      setChatList(res.data);
-      // setSelectedUser(res.data[0]);
-      setTimeout(() => {
-        console.log("CHAT DATA", chatList);
-        console.log("selectedUser", selectedUser);
-      }, 100);
+
+      let newData = [
+        {
+          conversationId: 19,
+          name: "FE Teams",
+          profilePic: null,
+          lastMessage: "",
+          lastMessageTime: null,
+        },
+        {
+          conversationId: 18,
+          name: "Dev Teams",
+          profilePic: null,
+          lastMessage: "",
+          lastMessageTime: null,
+        },
+        {
+          conversationId: 17,
+          name: "Jitu343s",
+          profilePic: "",
+          lastMessage: "",
+          lastMessageTime: null,
+        },
+        {
+          conversationId: 16,
+          name: "Jitu3s",
+          profilePic: "",
+          lastMessage: "",
+          lastMessageTime: null,
+        },
+        {
+          conversationId: 119,
+          name: "FE Teamss",
+          profilePic: null,
+          lastMessage: "",
+          lastMessageTime: null,
+        },
+        {
+          conversationId: 118,
+          name: "Dev Teamss",
+          profilePic: null,
+          lastMessage: "",
+          lastMessageTime: null,
+        },
+        {
+          conversationId: 117,
+          name: "Jitu343ss",
+          profilePic: "",
+          lastMessage: "",
+          lastMessageTime: null,
+        },
+        {
+          conversationId: 116,
+          name: "Jitu3ss",
+          profilePic: "",
+          lastMessage: "",
+          lastMessageTime: null,
+        },
+      ];
+
+      setChatList([...newData, ...(res.data || [])]);
     } catch (error) {
       console.error(error);
     }
   };
+
   useEffect(() => {
     getList();
   }, []);
+
   useEffect(() => {
     if (window.innerWidth >= 768 && chatList.length > 0) {
       setSelectedUser(chatList[0]);
     }
   }, [chatList]);
+
   return (
-    <div className="h-screen grid grid-cols-12 bg-gray-100">
+    <div className="h-screen overflow-hidden flex bg-gray-100">
       {/* Sidebar */}
-      <div className="col-span-12 md:col-span-4 lg:col-span-3 bg-white p-4 border-r">
-        <h2 className="text-xl font-semibold mb-4">Chats</h2>
+      <div className="w-full md:w-[320px] lg:w-[350px] bg-white border-r flex flex-col">
+        <div className="p-4 border-b flex items-center justify-between">
+          <h2 className="text-xl font-semibold p-4 border-b">Chats</h2>
+          <div className="md:hidden px-3 py-1 rounded-lg">
+            <img
+              className="w-12 h-12 rounded-full flex-shrink-0"
+              src={logOut}
+              alt="logOut"
+              onClick={() => {
+                navigate("/");
+                localStorage.clear();
+                sessionStorage.clear();
+                logout();
+              }}
+            />
+          </div>
+        </div>
 
-        <div className="flex flex-col gap-3">
-          {chatList.map((chat: Chat) => (
-            // <div
-            //   key={chat.conversationId}
-            //   onClick={() => navigate(`/chat/${chat.conversationId}`)}
-            //   className="p-3 rounded-sm cursor-pointer hover:bg-gray-100 flex justify-between items-center"
-            // >
-            //   <div className="flex items-center justify-center  flex-col">
-            //     <div className="flex items-center justify-between gap-4">
-            //       <img
-            //       className="w-12 h-12"
-            //         src={chat.profilePic ? chat.profilePic : defaultUser}
-            //         alt={chat.name}
-            //         onError={(e) => {
-            //           e.currentTarget.onerror = null;
-            //           e.currentTarget.src = defaultUser;
-            //         }}
-            //       />
-            //       <h3 className="font-semibold">{chat.name}</h3>
-            //     </div>
-            //     <p className="text-sm text-gray-500">{chat.lastMessage||
-            //      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."}</p>
-            //   </div>
-
-            //   <span className="text-xs text-gray-400">
-            //     {chat.lastMessageTime}
-            //   </span>
-            // </div>
+        <div className="flex-1 overflow-y-auto p-2">
+          {chatList.map((chat) => (
             <div
               key={chat.conversationId}
               onClick={() => {
@@ -85,45 +136,38 @@ const Dashboard = () => {
                   setSelectedUser(chat);
                 }
               }}
-              className="p-3 rounded-sm cursor-pointer hover:bg-gray-100 flex items-center justify-between"
+              className="p-3 rounded cursor-pointer hover:bg-gray-100 flex items-center gap-3"
             >
-              {/* LEFT SECTION */}
-              <div className="flex items-center gap-3 w-full min-w-0">
-                {/* Avatar */}
-                <img
-                  className="w-12 h-12 rounded-full flex-shrink-0"
-                  src={chat.profilePic || defaultUser}
-                  alt={chat.name}
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = defaultUser;
-                  }}
-                />
+              <img
+                className="w-12 h-12 rounded-full flex-shrink-0"
+                src={chat.profilePic || defaultUser}
+                alt={chat.name}
+                onError={(e) => {
+                  e.currentTarget.src = defaultUser;
+                }}
+              />
 
-                {/* Name + Message */}
-                <div className="flex flex-col flex-1 min-w-0">
-                  <h3 className="font-semibold truncate">{chat.name}</h3>
+              <div className="flex flex-col flex-1 min-w-0">
+                <h3 className="font-semibold truncate">{chat.name}</h3>
 
-                  <p className="text-sm text-gray-500 truncate">
-                    {chat.lastMessage ||
-                      "Lorem Ipsum is simply dummy text of the printing and typesetting industry..."}
-                  </p>
-                </div>
+                <p className="text-sm text-gray-500 truncate">
+                  {chat.lastMessage || "Start conversation..."}
+                </p>
               </div>
-
-              {/* RIGHT SECTION (time) */}
-              <span className="text-xs text-gray-400 ml-2 flex-shrink-0">
-                {chat.lastMessageTime}
-              </span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Empty state (desktop) */}
-      <div className="hidden md:flex col-span-8 lg:col-span-9 h-screen">
-        {/* <p className="text-gray-400">Select a chat to start messaging</p> */}
-        <Chat selectedUser={selectedUser} />
+      {/* Chat Panel (Desktop only) */}
+      <div className="hidden md:flex flex-1">
+        {selectedUser ? (
+          <Chat selectedUser={selectedUser} />
+        ) : (
+          <div className="flex items-center justify-center w-full text-gray-400">
+            Select a chat
+          </div>
+        )}
       </div>
     </div>
   );
