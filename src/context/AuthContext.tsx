@@ -1,6 +1,6 @@
 import { createContext, useContext, useState,  useEffect } from "react";
 import type {ReactNode } from "react";
-import { connectSocket, disconnectSocket } from "../socket/socket";
+import { connectSocket, disconnectSocket ,getSocket} from "../socket/socket";
 import { refreshAccessToken } from "../utility/refreshToken";
 
 interface User {
@@ -43,9 +43,10 @@ export const AuthProvider = ({ children }: Props) => {
     if (storedToken && storedUser) {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
-
-      // reconnect socket
-      connectSocket(storedToken);
+      // ✅ connect only if not already connected
+      if (!getSocket()) {
+        connectSocket(storedToken);
+      }
     }
   }, []);
 
@@ -59,8 +60,9 @@ export const AuthProvider = ({ children }: Props) => {
     if(data?.user){
       localStorage.setItem("user", JSON.stringify(data.user));
     }
-    // 🔥 connect socket
-    connectSocket(data.token);
+    // ✅ reset socket before reconnect
+    disconnectSocket();
+    connectSocket(data.token)
   };
 
   // 🚪 Logout
@@ -68,9 +70,8 @@ export const AuthProvider = ({ children }: Props) => {
     setUser(null);
     setToken(null);
 
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
-
+    localStorage.clear();
+    console.log("Logout towards socket disconnect");
     // 🔥 disconnect socket
     disconnectSocket();
   };
@@ -80,13 +81,16 @@ export const AuthProvider = ({ children }: Props) => {
     if (!token) return;
 
     const interval = setInterval(async () => {
-      const newToken = await refreshAccessToken();
+    const newToken = await refreshAccessToken();
 
       if (newToken) {
         setToken(newToken);
+        localStorage.setItem("accessToken", newToken);
+        // ✅ reconnect cleanly
+        disconnectSocket();
         connectSocket(newToken);
       }
-    }, 1 * 60 * 1000);
+    }, 12 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, [token]);

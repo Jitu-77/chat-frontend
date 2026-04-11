@@ -23,72 +23,73 @@ const Dashboard = () => {
   const {logout} = useAuth();
   const [chatList, setChatList] = useState<ChatType[]>([]);
   const [selectedUser, setSelectedUser] = useState<ChatType | null>(null);
-
+  const {user} :any = useAuth();
   const getList = async () => {
     try {
       const res: any =
         await apiService.get<ChatListResponse>("/conversation/home");
 
-      let newData = [
-        {
-          conversationId: 19,
-          name: "FE Teams",
-          profilePic: null,
-          lastMessage: "",
-          lastMessageTime: null,
-        },
-        {
-          conversationId: 18,
-          name: "Dev Teams",
-          profilePic: null,
-          lastMessage: "",
-          lastMessageTime: null,
-        },
-        {
-          conversationId: 17,
-          name: "Jitu343s",
-          profilePic: "",
-          lastMessage: "",
-          lastMessageTime: null,
-        },
-        {
-          conversationId: 16,
-          name: "Jitu3s",
-          profilePic: "",
-          lastMessage: "",
-          lastMessageTime: null,
-        },
-        {
-          conversationId: 119,
-          name: "FE Teamss",
-          profilePic: null,
-          lastMessage: "",
-          lastMessageTime: null,
-        },
-        {
-          conversationId: 118,
-          name: "Dev Teamss",
-          profilePic: null,
-          lastMessage: "",
-          lastMessageTime: null,
-        },
-        {
-          conversationId: 117,
-          name: "Jitu343ss",
-          profilePic: "",
-          lastMessage: "",
-          lastMessageTime: null,
-        },
-        {
-          conversationId: 116,
-          name: "Jitu3ss",
-          profilePic: "",
-          lastMessage: "",
-          lastMessageTime: null,
-        },
-      ];
+      // let newData = [
+      //   {
+      //     conversationId: 19,
+      //     name: "FE Teams",
+      //     profilePic: null,
+      //     lastMessage: "",
+      //     lastMessageTime: null,
+      //   },
+      //   {
+      //     conversationId: 18,
+      //     name: "Dev Teams",
+      //     profilePic: null,
+      //     lastMessage: "",
+      //     lastMessageTime: null,
+      //   },
+      //   {
+      //     conversationId: 17,
+      //     name: "Jitu343s",
+      //     profilePic: "",
+      //     lastMessage: "",
+      //     lastMessageTime: null,
+      //   },
+      //   {
+      //     conversationId: 16,
+      //     name: "Jitu3s",
+      //     profilePic: "",
+      //     lastMessage: "",
+      //     lastMessageTime: null,
+      //   },
+      //   {
+      //     conversationId: 119,
+      //     name: "FE Teamss",
+      //     profilePic: null,
+      //     lastMessage: "",
+      //     lastMessageTime: null,
+      //   },
+      //   {
+      //     conversationId: 118,
+      //     name: "Dev Teamss",
+      //     profilePic: null,
+      //     lastMessage: "",
+      //     lastMessageTime: null,
+      //   },
+      //   {
+      //     conversationId: 117,
+      //     name: "Jitu343ss",
+      //     profilePic: "",
+      //     lastMessage: "",
+      //     lastMessageTime: null,
+      //   },
+      //   {
+      //     conversationId: 116,
+      //     name: "Jitu3ss",
+      //     profilePic: "",
+      //     lastMessage: "",
+      //     lastMessageTime: null,
+      //   },
+      // ];
 
-      setChatList([...newData, ...(res.data || [])]);
+      // setChatList([...newData, ...(res.data || [])]);
+      setChatList([...res.data || []]);
     } catch (error) {
       console.error(error);
     }
@@ -101,6 +102,7 @@ const Dashboard = () => {
   useEffect(() => {
     if (window.innerWidth >= 768 && chatList.length > 0) {
       setSelectedUser(chatList[0]);
+      console.log(chatList[0]);
     }
   }, [chatList]);
 
@@ -109,7 +111,21 @@ const Dashboard = () => {
       {/* Sidebar */}
       <div className="w-full md:w-[320px] lg:w-[350px] bg-white border-r flex flex-col">
         <div className="p-4 border-b flex items-center justify-between">
-          <h2 className="text-xl font-semibold p-4 border-b">Chats</h2>
+          {/* <h2 className="text-xl font-semibold p-4 border-b">Chats</h2> */}
+          <div className="p-3 rounded cursor-pointer hover:bg-gray-100 flex items-center gap-3">
+              <img
+                className="w-12 h-12 rounded-full flex-shrink-0"
+                src={user?.profilePic || defaultUser}
+                alt={user?.firstName}
+                onError={(e) => {
+                  e.currentTarget.src = defaultUser;
+                }}
+              />
+
+              <div className="flex flex-col flex-1 min-w-0">
+                <h3 className="font-semibold truncate">{user.firstName}</h3>
+              </div>
+          </div>
           <div className="md:hidden px-3 py-1 rounded-lg">
             <img
               className="w-12 h-12 rounded-full flex-shrink-0"
