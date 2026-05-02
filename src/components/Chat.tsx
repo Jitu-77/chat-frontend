@@ -6,6 +6,7 @@ import back from "../assets/left-arrow.png";
 import logOut from "../assets/logOut.png";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/axios";
+import { useLocation } from "react-router-dom";
 interface Message {
   id: number;
   text: string;
@@ -42,6 +43,10 @@ const Chat = ({ selectedUser }: ChatProps) => {
   const [input, setInput] = useState("");
   const navigate = useNavigate();
   const {user} :any = useAuth();
+  const location = useLocation();
+  if(!selectedUser){
+    selectedUser = location?.state?.selectedUser
+  }
   // JOIN ROOM
   useEffect(() => {
     console.log("selectedUser chat",selectedUser);
@@ -151,7 +156,7 @@ useEffect(() => {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 pb-24 md:pb-4 flex flex-col gap-2">
+      <div className="flex-1 overflow-y-auto p-4 pb-32 md:pb-4 flex flex-col gap-2">
         {messages.map((msg) => (
           <div
             key={msg.id}

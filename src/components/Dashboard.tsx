@@ -147,7 +147,9 @@ const Dashboard = () => {
               key={chat.conversationId}
               onClick={() => {
                 if (window.innerWidth < 768) {
-                  navigate(`/chat/${chat.conversationId}`);
+                  navigate(`/chat/${chat.conversationId}`,{
+                    state: { selectedUser: chat }
+                  });
                 } else {
                   setSelectedUser(chat);
                 }
