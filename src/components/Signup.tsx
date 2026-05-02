@@ -96,7 +96,7 @@ const Signup = () => {
           <input
             type="text"
             name="password"
-            placeholder="Last Name"
+            placeholder="Password"
             className="border rounded-xl px-4 py-2 focus:outline-primary"
             value={formik.values.password}
             onChange={formik.handleChange}

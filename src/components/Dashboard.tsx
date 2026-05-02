@@ -5,6 +5,7 @@ import defaultUser from "../assets/user.png";
 import Chat from "./Chat";
 import logOut from "../assets/logOut.png";
 import { useAuth } from "../context/AuthContext";
+import Search from "./Search";
 interface ChatType {
   conversationId: number;
   name: string;
@@ -28,67 +29,6 @@ const Dashboard = () => {
     try {
       const res: any =
         await apiService.get<ChatListResponse>("/conversation/home");
-
-      // let newData = [
-      //   {
-      //     conversationId: 19,
-      //     name: "FE Teams",
-      //     profilePic: null,
-      //     lastMessage: "",
-      //     lastMessageTime: null,
-      //   },
-      //   {
-      //     conversationId: 18,
-      //     name: "Dev Teams",
-      //     profilePic: null,
-      //     lastMessage: "",
-      //     lastMessageTime: null,
-      //   },
-      //   {
-      //     conversationId: 17,
-      //     name: "Jitu343s",
-      //     profilePic: "",
-      //     lastMessage: "",
-      //     lastMessageTime: null,
-      //   },
-      //   {
-      //     conversationId: 16,
-      //     name: "Jitu3s",
-      //     profilePic: "",
-      //     lastMessage: "",
-      //     lastMessageTime: null,
-      //   },
-      //   {
-      //     conversationId: 119,
-      //     name: "FE Teamss",
-      //     profilePic: null,
-      //     lastMessage: "",
-      //     lastMessageTime: null,
-      //   },
-      //   {
-      //     conversationId: 118,
-      //     name: "Dev Teamss",
-      //     profilePic: null,
-      //     lastMessage: "",
-      //     lastMessageTime: null,
-      //   },
-      //   {
-      //     conversationId: 117,
-      //     name: "Jitu343ss",
-      //     profilePic: "",
-      //     lastMessage: "",
-      //     lastMessageTime: null,
-      //   },
-      //   {
-      //     conversationId: 116,
-      //     name: "Jitu3ss",
-      //     profilePic: "",
-      //     lastMessage: "",
-      //     lastMessageTime: null,
-      //   },
-      // ];
-
-      // setChatList([...newData, ...(res.data || [])]);
       setChatList([...res.data || []]);
     } catch (error) {
       console.error(error);
@@ -105,7 +45,54 @@ const Dashboard = () => {
       console.log(chatList[0]);
     }
   }, [chatList]);
-
+const handleUserSelect = (selectedUser: any) => {
+  console.log("Selected user:", selectedUser);
+  console.log("ChatList",chatList);
+  if(selectedUser?.id){
+    if(chatList?.length && chatList.some((data:any)=> selectedUser.id === data.id)){
+        console.log("Selected user match:", selectedUser);
+        let selectedChat :any = chatList.find((data:any) => data.id === selectedUser.id);
+        console.log("Selected chat",selectedChat);
+        if (selectedChat) {
+                if (window.innerWidth < 768) {
+                  navigate(`/chat/${selectedChat.conversationId}`,{
+                    state: { selectedUser: selectedChat }
+                  });
+                } else {
+                  setSelectedUser(selectedChat);
+                }
+        }else {console.log("Check Here 1")}
+        return
+    }
+    console.log("Selected user not match:", selectedUser);
+    createConv(selectedUser)
+    return
+  }
+  // future:
+  // open chat OR create conversation
+};
+const createConv = async (userDetails:any)=>{
+  console.log("createConv",userDetails);
+  const response :any = await apiService.post("conversation/create",{"otherUserId": userDetails.id});
+  if(response?.success){
+    await apiService.get<ChatListResponse>("/conversation/home").then((res:any)=>{
+      console.log("res",res); 
+      setChatList([...res.data || []])
+      let selectedChat :any = res.data.find((data:any) => data.id == userDetails.id);
+      console.log("Selected chat",selectedChat);
+        if (selectedChat) {
+                if (window.innerWidth < 768) {
+                  navigate(`/chat/${selectedChat.conversationId}`,{
+                    state: { selectedUser: selectedChat }
+                  });
+                } else {
+                  setSelectedUser(selectedChat);
+                }
+        }else {console.log("Check Here 2")}
+    })
+  }
+  return
+}
   return (
     <div className="h-screen overflow-hidden flex bg-gray-100">
       {/* Sidebar */}
@@ -140,7 +127,9 @@ const Dashboard = () => {
             />
           </div>
         </div>
-
+        <div>
+          <Search onUserSelect={handleUserSelect} />
+        </div>
         <div className="flex-1 overflow-y-auto p-2">
           {chatList.map((chat) => (
             <div
