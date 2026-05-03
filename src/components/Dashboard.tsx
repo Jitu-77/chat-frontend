@@ -4,8 +4,11 @@ import { apiService } from "../api/apiService";
 import defaultUser from "../assets/user.png";
 import Chat from "./Chat";
 import logOut from "../assets/logOut.png";
+import deleteImage from "../assets/delete.png";
+import plus from "../assets/plus+.png";
 import { useAuth } from "../context/AuthContext";
 import Search from "./Search";
+import CreateGroup from "./CreateGroup";
 interface ChatType {
   conversationId: number;
   name: string;
@@ -25,6 +28,7 @@ const Dashboard = () => {
   const [chatList, setChatList] = useState<ChatType[]>([]);
   const [selectedUser, setSelectedUser] = useState<ChatType | null>(null);
   const {user} :any = useAuth();
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const getList = async () => {
     try {
       const res: any =
@@ -45,6 +49,16 @@ const Dashboard = () => {
       console.log(chatList[0]);
     }
   }, [chatList]);
+useEffect(() => {
+  const handleEsc = (e: KeyboardEvent) => {
+    if (e.key === "Escape") setIsGroupModalOpen(false);
+  };
+  window.addEventListener("keydown", handleEsc);
+  return () => window.removeEventListener("keydown", handleEsc);
+}, []);
+useEffect(() => {
+  document.body.style.overflow = isGroupModalOpen ? "hidden" : "auto";
+}, [isGroupModalOpen]);  
 const handleUserSelect = (selectedUser: any) => {
   console.log("Selected user:", selectedUser);
   console.log("ChatList",chatList);
@@ -71,6 +85,12 @@ const handleUserSelect = (selectedUser: any) => {
   // future:
   // open chat OR create conversation
 };
+const handleCreateGroup = (data:any) => {
+    console.log("handleCreateGroup",data);
+    if(data){
+      getList();
+    }
+}
 const createConv = async (userDetails:any)=>{
   console.log("createConv",userDetails);
   const response :any = await apiService.post("conversation/create",{"otherUserId": userDetails.id});
@@ -161,6 +181,16 @@ const createConv = async (userDetails:any)=>{
                   {chat.lastMessage || "Start conversation..."}
                 </p>
               </div>
+              <div>
+                            {/* <img
+              className="w-5 h-5 rounded-full flex-shrink-0"
+              src={deleteImage}
+              alt="deleteImage"
+              onClick={() => {
+                console.log("deleteImage");
+              }}
+            />   */}
+              </div>
             </div>
           ))}
         </div>
@@ -176,6 +206,44 @@ const createConv = async (userDetails:any)=>{
           </div>
         )}
       </div>
+
+      <div
+  className="
+    fixed 
+    bottom-6 right-6 
+    md:bottom-6 md:left-6 lg:right-12
+
+    w-14 h-14 
+    rounded-full 
+    
+    bg-indigo-600 hover:bg-indigo-700
+    
+    flex items-center justify-center
+    
+    shadow-lg hover:shadow-xl
+    transition-all duration-300
+    
+    cursor-pointer
+    z-[9999]
+  "
+  onClick={() => {
+    console.log("plus");
+    setIsGroupModalOpen(true);
+  }}
+>
+  <img
+    className="w-6 h-6"
+    src={plus}
+    alt="plus"
+  />
+      </div>
+
+<CreateGroup
+  isOpen={isGroupModalOpen}
+  onClose={() => setIsGroupModalOpen(false)}
+  chatList={chatList}
+  onCreateGroup={handleCreateGroup}
+/>
     </div>
   );
 };
