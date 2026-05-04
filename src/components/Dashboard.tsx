@@ -16,6 +16,7 @@ interface ChatType {
   profilePic: string;
   lastMessage: string;
   lastMessageTime: string | null;
+  unreadCount?: number; // 🔥 ADD THIS if not already
 }
 
 interface ChatListResponse {
@@ -30,8 +31,10 @@ const Dashboard = () => {
   const [selectedUser, setSelectedUser] = useState<ChatType | null>(null);
   const { user }: any = useAuth();
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
-  const [activeConversationId, setActiveConversationId] = useState<number | null>(null);
-  const socket :any= getSocket();
+  const [activeConversationId, setActiveConversationId] = useState<
+    number | null
+  >(null);
+  const socket: any = getSocket();
   const getList = async () => {
     try {
       const res: any =
@@ -53,15 +56,15 @@ const Dashboard = () => {
   //   }
   // }, [chatList]);
   useEffect(() => {
-  if (
-    window.innerWidth >= 768 &&
-    chatList.length > 0 &&
-    !selectedUser // 🔥 only if nothing selected
-  ) {
-    setSelectedUser(chatList[0]);
-    setActiveConversationId(chatList[0].conversationId); // keep sync
-  }
-}, [chatList, selectedUser]);
+    if (
+      window.innerWidth >= 768 &&
+      chatList.length > 0 &&
+      !selectedUser // 🔥 only if nothing selected
+    ) {
+      setSelectedUser(chatList[0]);
+      setActiveConversationId(chatList[0].conversationId); // keep sync
+    }
+  }, [chatList, selectedUser]);
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsGroupModalOpen(false);
@@ -111,40 +114,75 @@ const Dashboard = () => {
     //   });
     // });
 
-    socket.on("dashboard_update", (data:any) => {
-  setChatList((prev) => {
-    let updated = prev.map((chat:any) => {
-      if (chat.conversationId === data.conversationId) {
-        return {
-          ...chat,
-          lastMessage: data.lastMessage,
-          lastMessageTime: data.lastMessageTime,
+    socket.on("dashboard_update", (data: any) => {
+      setChatList((prev) => {
+        let updated = prev.map((chat: any) => {
+          if (chat.conversationId == data.conversationId) {
+            return {
+              ...chat,
+              lastMessage: data.lastMessage,
+              lastMessageTime: data.lastMessageTime,
+              unreadCount: (chat.unreadCount || 0) + 1,
+              // // 🔥 only increment if NOT active chat
+              // unreadCount:
+              //   chat.conversationId == activeConversationId
+              //     ? 0
+              //     : (chat.unreadCount || 0) + 1,
+            };
+          }
+          return chat;
+        });
 
-          // 🔥 only increment if NOT active chat
-          unreadCount:
-            chat.conversationId === activeConversationId
-              ? 0
-              : (chat.unreadCount || 0) + 1,
-        };
-      }
-      return chat;
-    });
+        // 🔥 SORT BUT DO NOT CHANGE ACTIVE CHAT
+        updated.sort((a, b) => {
+          return (
+            new Date(b.lastMessageTime || 0).getTime() -
+            new Date(a.lastMessageTime || 0).getTime()
+          );
+        });
 
-    // 🔥 SORT BUT DO NOT CHANGE ACTIVE CHAT
-    updated.sort((a, b) => {
-      return (
-        new Date(b.lastMessageTime || 0).getTime() -
-        new Date(a.lastMessageTime || 0).getTime()
-      );
-    });
-
-    return updated;
-  });
+        return updated;
+      });
     });
     return () => {
       socket.off("dashboard_update");
     };
   }, []);
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("messages_read", (data: { conversationId: number }) => {
+      setChatList((prev) =>
+        prev.map((chat) =>
+          chat.conversationId === data.conversationId
+            ? { ...chat, unreadCount: 0 }
+            : chat,
+        ),
+      );
+    });
+
+    return () => {
+      socket.off("messages_read");
+    };
+  }, []);
+  useEffect(() => {
+    // 👉 optional: restrict to desktop
+    if (window.innerWidth < 768) return;
+
+    if (!selectedUser) return;
+
+    const timeout = setTimeout(() => {
+      setChatList((prev) =>
+        prev.map((chat) =>
+          chat.conversationId === selectedUser.conversationId
+            ? { ...chat, unreadCount: 0 }
+            : chat,
+        ),
+      );
+    }, 800);
+
+    return () => clearTimeout(timeout);
+  }, [chatList, selectedUser]);
   const handleUserSelect = (selectedUser: any) => {
     console.log("Selected user:", selectedUser);
     console.log("ChatList", chatList);
@@ -261,17 +299,17 @@ const Dashboard = () => {
 
                 // 🔥 reset unread locally
                 setChatList((prev) =>
-    prev.map((c) =>
-      c.conversationId === chat.conversationId
-        ? { ...c, unreadCount: 0 }
-        : c
-    )
+                  prev.map((c) =>
+                    c.conversationId === chat.conversationId
+                      ? { ...c, unreadCount: 0 }
+                      : c,
+                  ),
                 );
 
                 // 🔥 notify backend
                 socket.emit("message_read", {
-                      conversationId: chat.conversationId,
-                });                
+                  conversationId: chat.conversationId,
+                });
                 // --------
                 if (window.innerWidth < 768) {
                   navigate(`/chat/${chat.conversationId}`, {
